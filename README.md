@@ -5,7 +5,7 @@ This project demonstrates how to implement authentication in a Next.js applicati
 ## Features
 
 - User authentication with NextAuth.js
-- Social login (GitHub)
+- Sendgrid for email verification & password reset
 - Custom login page
 - Protected routes
 - User sessions
