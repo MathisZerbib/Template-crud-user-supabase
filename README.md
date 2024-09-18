@@ -59,6 +59,7 @@ SENDGRID_SMTP_SERVER='smtp://apikey:[YOUR-PASSWORD]@smtp.sendgrid.net:587'
 ```bash
 // This is your Prisma schema file,
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
+
 generator client {
     provider = "prisma-client-js"
 }
@@ -108,6 +109,7 @@ model User {
     sessions          Session[]
     resetToken        String?
     verificationToken String?
+    resetTokenExpiry  DateTime?
 }
 
 model VerificationRequest {
