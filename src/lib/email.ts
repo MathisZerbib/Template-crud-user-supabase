@@ -1,16 +1,15 @@
 import sgMail from '@sendgrid/mail';
+import jwt from 'jsonwebtoken';
 
 sgMail.setApiKey(process.env.SENDGRID_API_KEY!);
 
-export async function sendPasswordResetEmail(email: string, resetToken: string) {
-    const resetUrl = `${process.env.NEXT_PUBLIC_NEXTAUTH_URL}/reset-password?token=${resetToken}&email=${email}`;
-
+export async function sendPasswordResetEmail(email: string, resetLink: string) {
     const msg = {
         to: email,
-        from: 'mathis.zerbib@epitech.eu', // Use your verified SendGrid sender email
+        from: process.env.SENDGRID_FROM_EMAIL!, // Use your verified SendGrid sender email
         subject: 'Password Reset Request',
-        text: `You requested a password reset. Click the link to reset your password: ${resetUrl}`,
-        html: `<p>You requested a password reset. Click the link to reset your password:</p><p><a href="${resetUrl}">Reset Password</a></p>`,
+        text: `You requested a password reset. Click the link to reset your password: ${resetLink}`,
+        html: `<p>You requested a password reset. Click the link to reset your password:</p><p><a href="${resetLink}">Reset Password</a></p>`,
     };
 
     try {
@@ -23,22 +22,26 @@ export async function sendPasswordResetEmail(email: string, resetToken: string) 
 }
 
 
-export async function sendVerificationEmail(email: string, verificationToken: string) {
-    const verificationUrl = `${process.env.NEXT_PUBLIC_NEXTAUTH_URL}/verify-email?token=${verificationToken}&email=${email}`;
+export async function sendVerificationEmail(email: string) {
+    const token = jwt.sign({ email }, process.env.NEXT_AUTH_SECRET!, {
+        expiresIn: '1h', // Token expires in 1 hour
+    });
+
+    const verificationUrl = `${process.env.NEXT_PUBLIC_APP_URL}/verify-email?token=${token}&email=${encodeURIComponent(email)}`;
 
     const msg = {
         to: email,
-        from: 'mathis.zerbib@epitech.eu', // Use your verified SendGrid sender email
+        from: process.env.SENDGRID_FROM_EMAIL!, // Your SendGrid verified email
         subject: 'Verify your email address',
-        text: `Click the link to verify your email address: ${verificationUrl}`,
-        html: `<p>Click the link to verify your email address:</p><p><a href="${verificationUrl}">Verify Email</a></p>`,
+        text: `Please verify your email by clicking the link: ${verificationUrl}`,
+        html: `<p>Please verify your email by clicking <a href="${verificationUrl}">here</a>.</p>`,
     };
 
     try {
         await sgMail.send(msg);
-        console.log('Verification email sent');
+        console.log('Verification email sent to:', email);
     } catch (error) {
-        console.error('Error sending verification email:', error);
-        throw new Error('Error sending verification email');
+        console.error('Error in lib sending verification email:', error);
+        throw new Error('Failed to send verification email');
     }
 }

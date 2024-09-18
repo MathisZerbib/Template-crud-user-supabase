@@ -37,7 +37,6 @@ function LoginPage() {
       const res = await signIn("credentials", {
         email,
         password,
-        callbackUrl: `${process.env.NEXT_PUBLIC_NEXTAUTH_URL}`,
         redirect: false,
       });
 

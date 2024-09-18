@@ -50,6 +50,7 @@ model User {
     sessions          Session[]
     resetToken        String?
     verificationToken String?
+    resetTokenExpiry  DateTime?
 }
 
 model VerificationRequest {

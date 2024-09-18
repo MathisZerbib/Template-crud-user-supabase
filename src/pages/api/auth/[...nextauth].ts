@@ -1,12 +1,13 @@
 import NextAuth, { NextAuthOptions, Session, User } from "next-auth";
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
 import CredentialsProvider from "next-auth/providers/credentials";
+import EmailProvider from "next-auth/providers/email";
 import prisma from "../../../../lib/prisma";
 import { JWT } from "next-auth/jwt";
 import { NextApiRequest, NextApiResponse } from "next";
-
-// Define user account globally (or consider moving inside the function if local)
-let userAccount: any;
+import { sendVerificationEmail } from "../../../lib/email";
+import { CustomPrismaAdapter } from "../../../custom-prisma-adapter";
+import bcrypt from 'bcryptjs';
 
 export const authOptions: NextAuthOptions = {
     providers: [
@@ -17,54 +18,51 @@ export const authOptions: NextAuthOptions = {
                 email: { label: "Email", type: "email", placeholder: "example@example.com" },
                 password: { label: "Password", type: "password" },
             },
-            async authorize(credentials, req) {
-                if (!credentials?.email || !credentials.password) {
-                    throw new Error("Invalid credentials");
-                }
-
-                const userCredentials = {
-                    email: credentials.email,
-                    password: credentials.password,
-                };
-
-                const res = await fetch(
-                    `${process.env.NEXT_PUBLIC_NEXTAUTH_URL}/api/user/login`,
-                    {
-                        method: "POST",
-                        body: JSON.stringify(userCredentials),
-                        headers: {
-                            "Content-Type": "application/json",
-                        },
-                    }
-                );
-                const user = await res.json();
-
-                if (res.ok && user) {
-                    userAccount = user;
-                    return user;  // This should return a user object or null
-                } else {
+            async authorize(credentials) {
+                if (!credentials) {
                     return null;
                 }
+
+                const user = await prisma.user.findUnique({
+                    where: { email: credentials.email },
+                });
+
+                if (user && user.password && await bcrypt.compare(credentials.password, user.password)) {
+                    return { id: user.id, email: user.email, name: user.name };
+                }
+
+                return null;
+            },
+
+        }),
+
+        EmailProvider({
+            server: process.env.SENDGRID_SMTP_SERVER,
+            from: process.env.SENDGRID_FROM_EMAIL,
+            async sendVerificationRequest({ identifier: email, url, provider }) {
+                await sendVerificationEmail(email);
             },
         }),
     ],
 
-    adapter: PrismaAdapter(prisma),
-    secret: process.env.NEXTAUTH_SECRET,
+    adapter: CustomPrismaAdapter(prisma),
+    secret: process.env.NEXT_AUTH_SECRET,
+
     session: {
         strategy: "jwt",
-        maxAge: 24 * 60 * 60,  // 24 hours
+        maxAge: 24 * 60 * 60,
     },
 
     jwt: {
-        secret: process.env.NEXTAUTH_SECRET,
-        maxAge: 60 * 60 * 24 * 30,  // 30 days
+        secret: process.env.NEXT_AUTH_SECRET,
+        maxAge: 60 * 60 * 24 * 30,
     },
 
     pages: {
         signIn: "/login",
         signOut: "/login",
         error: "/login",
+        verifyRequest: '/verify-email',
     },
 
     callbacks: {
@@ -84,6 +82,17 @@ export const authOptions: NextAuthOptions = {
                 token.accessToken = `${user.id}-${user.email}-${user.name}`;
             }
             return token;
+        },
+
+        async signIn({ user, account, profile, email, credentials }) {
+            if (email?.verificationRequest) {
+                return true; // Allow sign in if it's a verification request
+            }
+            const isVerified = await prisma.user.findUnique({
+                where: { email: user.email as string },
+                select: { emailVerified: true },
+            });
+            return !!isVerified?.emailVerified; // Only allow sign in if email is verified
         },
     },
 };

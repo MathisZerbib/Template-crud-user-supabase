@@ -1,6 +1,7 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import prisma from "../../../lib/prisma";
 import { sendPasswordResetEmail } from "../../lib/email";
+import { v4 as uuidv4 } from "uuid";
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === "POST") {
@@ -19,15 +20,19 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
         return res.status(200).json({ message: "If an account with that email exists, a password reset link has been sent." });
       }
 
-      // Generate a password reset token and save it to the user record
-      const resetToken = generateResetToken(); // Assume you have a function to generate tokens
+      // Generate a password reset token and expiration (e.g., 1 hour from now)
+      const resetToken = uuidv4();
+      const resetTokenExpiry = new Date(Date.now() + 3600000); // 1 hour
+
+      // Save the token and expiry in the user's record
       await prisma.user.update({
         where: { email },
-        data: { resetToken },
+        data: { resetToken, resetTokenExpiry },
       });
 
-      // Send the password reset email
-      await sendPasswordResetEmail(email, resetToken);
+      // Send password reset email
+      const resetLink = `${process.env.NEXT_PUBLIC_APP_URL}/reset-password?token=${resetToken}&email=${email}`;
+      await sendPasswordResetEmail(email, resetLink);
 
       return res.status(200).json({ message: "If an account with that email exists, a password reset link has been sent." });
     } catch (error) {
@@ -37,9 +42,4 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
   } else {
     return res.status(405).json({ message: "Method Not Allowed" });
   }
-}
-
-function generateResetToken() {
-  // Generate a random string for the reset token
-  return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
 }
