@@ -14,7 +14,8 @@ This project demonstrates how to implement authentication in a Next.js applicati
 
 - Node.js (v14 or later)
 - npm or yarn
-- A GitHub account (for OAuth credentials)
+- A Supabase account
+- A Sendgrid account
 
 ## Getting Started
 
