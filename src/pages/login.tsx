@@ -67,13 +67,13 @@ function LoginPage() {
 
   return (
     <AuthLayout>
-      <div className="flex justify-center items-center min-h-screen p-6 bg-gray-100">
+      <div className="flex justify-center items-center min-h-screen p-4 sm:p-6 lg:p-8 w-full">
         <form
           onSubmit={handleSubmit}
-          className="bg-white shadow-lg rounded-lg px-8 pt-6 pb-8 mb-4 w-full max-w-md transition-transform transform hover:scale-105"
+          className="bg-white shadow-lg rounded-lg px-6 sm:px-8 pt-6 pb-8 mb-4 w-full max-w-md"
         >
           {error && (
-            <div className="mb-4 p-3 rounded-md bg-red-100 border border-red-400 text-red-700">
+            <div className="mb-4 p-3 rounded-md bg-red-100 border border-red-400 text-red-700 text-sm">
               {error}
             </div>
           )}
@@ -125,22 +125,22 @@ function LoginPage() {
               </p>
             )}
           </div>
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col sm:flex-row items-center justify-between">
             <button
-              className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline transition-colors duration-200"
+              className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline transition-colors duration-200 w-full sm:w-auto mb-4 sm:mb-0"
               type="submit"
               disabled={isLoading}
             >
               {isLoading ? "Loading..." : "Sign In"}
             </button>
             <Link
-              className="inline-block align-baseline font-bold text-sm text-blue-500 hover:text-blue-800 ml-4"
+              className="inline-block align-baseline font-bold text-sm text-blue-500 hover:text-blue-800"
               href="/forgot-password"
             >
               Forgot Password?
             </Link>
           </div>
-          <div className="flex items-center justify-center mt-4">
+          <div className="flex items-center justify-center mt-6">
             <Link
               className="inline-block align-baseline font-bold text-sm text-blue-500 hover:text-blue-800"
               href="/signup"

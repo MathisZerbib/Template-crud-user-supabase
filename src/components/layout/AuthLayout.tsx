@@ -6,9 +6,9 @@ interface AuthLayoutProps {
 
 function AuthLayout({ children }: AuthLayoutProps) {
   return (
-    <div className="flex h-screen w-screen justify-center items-center overflow-hidden bg-slate-100">
+    <main className="flex h-screen w-screen justify-center items-center overflow-hidden">
       {children}
-    </div>
+    </main>
   );
 }
 
