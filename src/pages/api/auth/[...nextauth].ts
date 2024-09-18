@@ -36,17 +36,25 @@ export const authOptions: NextAuthOptions = {
 
                 console.log("User found:", user ? "Yes" : "No");
 
-                if (user && user.password) {
-                    const inputHash = SHA256(credentials.password).toString();
-
-                    if (user.password === inputHash) {
-                        console.log("Password match");
-                        return { id: user.id, email: user.email, name: user.name };
+                if (user) {
+                    if (credentials.password) {
+                        // Normal login with password
+                        const inputHash = SHA256(credentials.password).toString();
+                        if (user.password === inputHash) {
+                            console.log("Password match");
+                            return { id: user.id, email: user.email, name: user.name };
+                        } else {
+                            console.log("Password mismatch");
+                        }
                     } else {
-                        console.log("Password mismatch");
+                        // Auto-login after email verification
+                        if (user.emailVerified) {
+                            console.log("Auto-login after email verification");
+                            return { id: user.id, email: user.email, name: user.name };
+                        } else {
+                            console.log("Email not verified for auto-login");
+                        }
                     }
-                } else {
-                    console.log("No password found for user");
                 }
 
                 console.log("Authorization failed");
