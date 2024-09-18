@@ -57,7 +57,6 @@ SENDGRID_FROM_EMAIL='YOUR_SENDGRID_FROM_EMAIL'
 ```bash
 // This is your Prisma schema file,
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
-```bash
 generator client {
     provider = "prisma-client-js"
 }
