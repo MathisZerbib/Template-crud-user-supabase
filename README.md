@@ -39,8 +39,7 @@ touch .env.local
 3. Add the following environment variables to the `.env.local` file:
 
 ```bash
-DATABASE_URL='postgresql://postgres.ynvuhdwzrcmuhbxhplnd:whyLUmLVBy2L3pDb@aws-0-eu-west-3.pooler.supabase.com:5432/postgres?schema=public'
-
+DATABASE_URL="postgresql://postgres:[YOUR-PASSWORD]@db.[YOUR-SUPABASE-ID].supabase.co:5432/postgres"
 NEXT_PUBLIC_NEXTAUTH_URL='http://localhost:3000'
 NEXTAUTH_SECRET='YOUR_SECRET'
 
@@ -137,3 +136,4 @@ npx prisma db push
 ```bash
 yarn dev
 ```
+
