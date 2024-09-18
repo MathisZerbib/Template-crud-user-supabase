@@ -50,11 +50,8 @@ SENDGRID_FROM_EMAIL='YOUR_SENDGRID_FROM_EMAIL'
 
 ## Prisma
 1. Modify the `DATABASE_URL` environment variable in the `.env.local` file with your Supabase database URL.
-2. Run the following commands to generate the Prisma client if you haven't already:
-   ```bash
-   npx prisma init
-    ```
-3. You can modify the schema in the `prisma/schema.prisma` file to match the following but you can modify it according to your needs:
+
+2. You can modify the schema in the `prisma/schema.prisma` file to match the following but you can modify it according to your needs:
   
 
 ```bash
