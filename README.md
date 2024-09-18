@@ -54,7 +54,7 @@ SENDGRID_FROM_EMAIL='YOUR_SENDGRID_FROM_EMAIL'
    ```bash
    npx prisma init
     ```
-3. Modify the schema in the `schema.prisma` file to match the following:
+3. You can modify the schema in the `prisma/schema.prisma` file to match the following but you can modify it according to your needs:
   
 
 ```bash
