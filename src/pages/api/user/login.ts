@@ -26,11 +26,31 @@ async function loginUserHandler(req: NextApiRequest, res: NextApiResponse) {
         email: true,
         password: true,
         image: true,
+        resetToken: true,
+        verificationToken: true,
       },
     });
+
+    // if (user && user.resetToken) {
+    //   console.log('reset password');
+    //   return res.status(401).json({ message: "reset password" });
+    // }
+
+    // else if (user && user.verificationToken) {
+    //   console.log('verify email');
+    //   return res.status(401).json({ message: "verify email" });
+    // }
+
+    // else
+
+
     if (user && user.password === hashPassword(password)) {
+      console.log('logged in');
       return res.status(200).json(exclude(user, ["password"]));
-    } else {
+    }
+
+    else {
+      console.log('invalid credentials');
       return res.status(401).json({ message: "invalid credentials" });
     }
   } catch (e) {
