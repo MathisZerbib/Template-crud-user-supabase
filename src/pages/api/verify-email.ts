@@ -27,11 +27,16 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             return res.status(400).json({ message: 'Invalid token or email.' });
         }
 
+
         // Update the user in the database
         const user = await prisma.user.update({
             where: { email },
-            data: { emailVerified: new Date() }, // Mark the email as verified
+            data: {
+                emailVerified: new Date(),
+                verificationToken: token,
+            },
         });
+
 
         if (!user) {
             return res.status(400).json({ message: 'User not found.' });

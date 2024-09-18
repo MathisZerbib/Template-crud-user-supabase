@@ -1,6 +1,6 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import prisma from "../../../lib/prisma";
-import bcrypt from "bcryptjs";
+import { SHA256 } from 'crypto-js';
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
     if (req.method === "POST") {
@@ -20,8 +20,8 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
                 return res.status(400).json({ message: "Invalid or expired token." });
             }
 
-            // Hash the new password
-            const hashedPassword = await bcrypt.hash(newPassword, 10);
+            // Hash the new password using SHA-256
+            const hashedPassword = SHA256(newPassword).toString();
 
             // Update the user's password and remove the reset token and expiry
             await prisma.user.update({
@@ -40,9 +40,9 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
             await prisma.user.update({
                 where: { email },
                 data: {
-                  emailVerified: new Date(),
+                    emailVerified: new Date(),
                 },
-              });
+            });
 
             return res.status(200).json({ message: "Password has been reset successfully." });
         } catch (error) {

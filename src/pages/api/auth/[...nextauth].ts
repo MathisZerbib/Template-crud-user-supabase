@@ -5,9 +5,8 @@ import EmailProvider from "next-auth/providers/email";
 import prisma from "../../../../lib/prisma";
 import { JWT } from "next-auth/jwt";
 import { NextApiRequest, NextApiResponse } from "next";
-import { sendVerificationEmail } from "../../../lib/email";
 import { CustomPrismaAdapter } from "../../../custom-prisma-adapter";
-import bcrypt from 'bcryptjs';
+import { SHA256 } from 'crypto-js';
 
 export const authOptions: NextAuthOptions = {
     providers: [
@@ -18,29 +17,48 @@ export const authOptions: NextAuthOptions = {
                 email: { label: "Email", type: "email", placeholder: "example@example.com" },
                 password: { label: "Password", type: "password" },
             },
-            async authorize(credentials) {
+            async authorize(credentials, req) {
                 if (!credentials) {
+                    console.log("No credentials provided");
                     return null;
                 }
 
                 const user = await prisma.user.findUnique({
                     where: { email: credentials.email },
+                    select: {
+                        id: true,
+                        email: true,
+                        name: true,
+                        password: true,
+                        emailVerified: true,
+                    },
                 });
 
-                if (user && user.password && await bcrypt.compare(credentials.password, user.password)) {
-                    return { id: user.id, email: user.email, name: user.name };
+                console.log("User found:", user ? "Yes" : "No");
+
+                if (user && user.password) {
+                    const inputHash = SHA256(credentials.password).toString();
+
+                    if (user.password === inputHash) {
+                        console.log("Password match");
+                        return { id: user.id, email: user.email, name: user.name };
+                    } else {
+                        console.log("Password mismatch");
+                    }
+                } else {
+                    console.log("No password found for user");
                 }
 
+                console.log("Authorization failed");
                 return null;
             },
-
         }),
-
         EmailProvider({
             server: process.env.SENDGRID_SMTP_SERVER,
             from: process.env.SENDGRID_FROM_EMAIL,
             async sendVerificationRequest({ identifier: email, url, provider }) {
-                await sendVerificationEmail(email);
+                // await sendVerificationEmail(email);
+                console.log("Email sent to:", email);
             },
         }),
     ],
@@ -85,14 +103,17 @@ export const authOptions: NextAuthOptions = {
         },
 
         async signIn({ user, account, profile, email, credentials }) {
+            console.log("Sign-in attempt:", { user, account, email, credentials });
             if (email?.verificationRequest) {
-                return true; // Allow sign in if it's a verification request
+                console.log("Verification request, allowing sign-in");
+                return true;
             }
-            const isVerified = await prisma.user.findUnique({
+            const dbUser = await prisma.user.findUnique({
                 where: { email: user.email as string },
                 select: { emailVerified: true },
             });
-            return !!isVerified?.emailVerified; // Only allow sign in if email is verified
+            console.log("DB User email verified:", dbUser?.emailVerified);
+            return !!dbUser?.emailVerified;
         },
     },
 };

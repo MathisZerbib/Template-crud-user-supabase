@@ -4,6 +4,7 @@ import { signIn } from "next-auth/react";
 import { useRouter } from "next/router";
 import Link from "next/link";
 import AuthLayout from "../components/layout/AuthLayout";
+import LoadingScreen from "../components/loading-screen";
 
 function LoginPage() {
   const [email, setEmail] = useState("");
@@ -34,18 +35,21 @@ function LoginPage() {
     setError("");
 
     try {
+      console.log("Attempting to sign in with:", { email, password: "******" });
       const res = await signIn("credentials", {
         email,
         password,
         redirect: false,
       });
 
+      console.log("Sign-in response:", res);
+
       if (res?.ok) {
-        console.log("success");
+        console.log("Login successful, redirecting...");
         router.push("/");
       } else {
         setError("Login failed. Please check your credentials and try again.");
-        console.log("Failed", res);
+        console.error("Login failed:", res?.error);
       }
     } catch (error) {
       setError("An unexpected error occurred. Please try again later.");
@@ -53,16 +57,6 @@ function LoginPage() {
     } finally {
       setIsLoading(false);
     }
-  }
-
-  if (isLoading) {
-    return (
-      <AuthLayout>
-        <p className="flex h-full justify-center items-center text-lg font-semibold">
-          Loading...
-        </p>
-      </AuthLayout>
-    );
   }
 
   return (

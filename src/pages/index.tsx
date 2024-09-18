@@ -2,11 +2,11 @@ import { Inter } from "next/font/google";
 import { authOptions } from "./api/auth/[...nextauth]";
 import { getServerSession } from "next-auth/next";
 import { useSession, signOut } from "next-auth/react";
-import Link from "next/link";
 import { GetServerSideProps, GetServerSidePropsContext } from "next";
-import Image from "next/image";
 import { useState, useEffect } from "react";
 import LoadingScreen from "../components/loading-screen";
+import UserProfileMenu from "../components/user-profile-menu";
+import Link from "next/link";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -37,6 +37,10 @@ export default function Home({ session: serverSession }: HomeProps) {
     return <LoadingScreen />;
   }
 
+  const handleSignOut = () => {
+    signOut();
+  };
+
   return (
     <main
       className={`flex min-h-screen flex-col items-center justify-between p-24 ${inter.className}`}
@@ -46,18 +50,8 @@ export default function Home({ session: serverSession }: HomeProps) {
           Welcome, {session?.user?.name ?? "Guest"}
         </p>
         <div className="fixed bottom-0 left-0 flex h-48 w-full items-end justify-center bg-gradient-to-t from-white via-white dark:from-black dark:via-black lg:static lg:h-auto lg:w-auto lg:bg-none">
-          {session?.user?.image ? (
-            <Image
-              src={session.user.image}
-              alt="User"
-              width={100}
-              height={100}
-              className="rounded-full"
-            />
-          ) : (
-            <span className="w-10 h-10 bg-gray-300 rounded-full flex items-center justify-center text-gray-600">
-              ?
-            </span>
+          {session?.user && (
+            <UserProfileMenu user={session.user} onSignOut={handleSignOut} />
           )}
         </div>
       </div>

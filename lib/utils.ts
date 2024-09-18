@@ -8,6 +8,11 @@ export function validateEmail(string: string): boolean {
   return emailRegex.test(string);
 }
 
+export function sanitizeInput(string: string): string {
+  return string.trim();
+}
+
+
 console.log(validateEmail("test?gmail.com"));
 console.log(validateEmail("test/gmail.com"));
 console.log(validateEmail("test.gmail.com"));

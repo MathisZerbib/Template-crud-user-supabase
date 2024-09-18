@@ -19,13 +19,18 @@ export default function VerifyEmail({ token, email }: VerifyEmailProps) {
       verifyEmail(token, email)
         .then(() => {
           setVerificationStatus("success");
-          signIn("email", {
+          // Automatically sign in the user
+          signIn("credentials", {
             email,
             callbackUrl: `${process.env.NEXT_PUBLIC_APP_URL}`,
             redirect: false,
-          }).then(() => {
-            //  call login by email next-auth provider
-            router.push("/"); // Redirect to home page
+          }).then((result) => {
+            if (result?.ok) {
+              router.push("/");
+            } else {
+              console.error("Auto-login failed:", result?.error);
+              setVerificationStatus("error");
+            }
           });
         })
         .catch((error) => {
@@ -55,7 +60,7 @@ export default function VerifyEmail({ token, email }: VerifyEmailProps) {
       {verificationStatus === "verifying" && <p>Verifying your email...</p>}
       {verificationStatus === "success" && (
         <p className="text-green-600">
-          Your email has been verified successfully! redirecting to login page
+          Your email has been verified successfully! Logging you in...
         </p>
       )}
       {verificationStatus === "error" && (

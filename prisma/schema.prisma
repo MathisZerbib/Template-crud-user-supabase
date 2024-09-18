@@ -49,8 +49,8 @@ model User {
     accounts          Account[]
     sessions          Session[]
     resetToken        String?
-    verificationToken String?
     resetTokenExpiry  DateTime?
+    verificationToken String?
 }
 
 model VerificationRequest {
