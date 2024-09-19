@@ -96,7 +96,7 @@ function LoginPage() {
               </p>
             )}
           </div>
-          <div className="mb-6">
+          <div className="mb-4">
             <label
               className="block text-gray-700 text-sm font-bold mb-2"
               htmlFor="password"
@@ -123,15 +123,16 @@ function LoginPage() {
 
           {/* hCaptcha Component */}
           <Turnstile
-            siteKey={process.env.NEXT_PUBLIC_HCAPTCHA_SITE_KEY!}
+            options={{ size: "invisible" }}
+            siteKey={process.env.NEXT_PUBLIC_CLOUDFLARE_SITE_KEY!}
             onSuccess={(token) => {
               setCaptchaToken(token);
             }}
           />
 
-          <div className="flex flex-col sm:flex-row items-center justify-between">
+          <div className="flex flex-col items-center justify-between">
             <button
-              className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline transition-colors duration-200 w-full sm:w-auto mb-4 sm:mb-0"
+              className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline transition-colors duration-200 w-full mb-4"
               type="submit"
               disabled={isLoading}
             >

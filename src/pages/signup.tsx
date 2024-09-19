@@ -153,7 +153,7 @@ function SignUp() {
             />
           </div>
 
-          <div className="mb-6">
+          <div className="mb-4">
             <label className="block text-gray-700 text-sm font-bold mb-2">
               Confirm Password
             </label>
@@ -174,7 +174,9 @@ function SignUp() {
 
           {/* Turnstile Cloudlfare */}
           <Turnstile
-            siteKey={process.env.NEXT_PUBLIC_HCAPTCHA_SITE_KEY!}
+            className="mb-4"
+            options={{ size: "flexible", theme: "light" }}
+            siteKey={process.env.NEXT_PUBLIC_CLOUDFLARE_SITE_KEY!}
             onSuccess={(token) => {
               setCaptchaToken(token);
             }}

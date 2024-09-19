@@ -8,12 +8,19 @@ const hashPassword = (string: string): string => {
   return sha256(string).toString();
 };
 
-// hCaptcha verification function
-async function verifyHCaptcha(token: string): Promise<boolean> {
-  const secretKey = process.env.NEXT_PUBLIC_HCAPTCHA_SECRET_KEY;
-  const verificationUrl = `https://hcaptcha.com/siteverify?secret=${secretKey}&response=${token}`;
+// Cloudflare Turnstile verification function
+async function verifyTurnstile(token: string): Promise<boolean> {
+  const secretKey = process.env.NEXT_PUBLIC_CLOUDFLARE_SECRET_KEY;
+  const verificationUrl = "https://challenges.cloudflare.com/turnstile/v0/siteverify";
 
-  const response = await fetch(verificationUrl, { method: "POST" });
+  const formData = new URLSearchParams();
+  formData.append("secret", secretKey as string);
+  formData.append("response", token);
+
+  const response = await fetch(verificationUrl, {
+    method: "POST",
+    body: formData,
+  });
   const data = await response.json();
 
   return data.success || false;
@@ -29,10 +36,11 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
 }
 
 async function createUserHandler(req: NextApiRequest, res: NextApiResponse) {
-  const { name, email, password, captchaToken } = req.body;
+  const { name, email, password, turnstileToken } = req.body;
 
   // Validate required fields
-  if (!name || !email || !password || !captchaToken) {
+  if (!name || !email || !password || !turnstileToken) {
+    console.error(name, email, password, turnstileToken);
     return res.status(400).json({ status: 400, errors: ["Missing required fields"] });
   }
 
@@ -41,10 +49,11 @@ async function createUserHandler(req: NextApiRequest, res: NextApiResponse) {
     return res.status(400).json({ errors: ["Password must be at least 6 characters long"] });
   }
 
-  // Verify hCaptcha
-  const isCaptchaValid = await verifyHCaptcha(captchaToken);
-  if (!isCaptchaValid) {
-    return res.status(400).json({ errors: ["Invalid hCaptcha verification"] });
+  // Verify Cloudflare Turnstile
+  const isTurnstileValid = await verifyTurnstile(turnstileToken);
+  if (!isTurnstileValid) {
+    console.error("Invalid Turnstile verification");
+    return res.status(400).json({ errors: ["Invalid Turnstile verification"] });
   }
 
   try {
