@@ -1,10 +1,10 @@
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useRef } from "react";
 import { validateEmail } from "../../lib/utils";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/router";
 import Link from "next/link";
 import AuthLayout from "../components/layout/AuthLayout";
-import LoadingScreen from "../components/loading-screen";
+import { Turnstile } from "@marsidev/react-turnstile";
 
 function LoginPage() {
   const [email, setEmail] = useState("");
@@ -13,6 +13,7 @@ function LoginPage() {
   const [emailInputError, setEmailInputError] = useState(false);
   const [passwordInputError, setPasswordInputError] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
 
   const router = useRouter();
 
@@ -26,8 +27,8 @@ function LoginPage() {
 
   async function handleSubmit(e: { preventDefault: () => void }) {
     e.preventDefault();
-    if (!validate()) {
-      setError("Please correct the input errors before submitting.");
+    if (!validate() || !captchaToken) {
+      setError("Please correct the input errors and complete the captcha.");
       return;
     }
 
@@ -119,6 +120,15 @@ function LoginPage() {
               </p>
             )}
           </div>
+
+          {/* hCaptcha Component */}
+          <Turnstile
+            siteKey={process.env.NEXT_PUBLIC_HCAPTCHA_SITE_KEY!}
+            onSuccess={(token) => {
+              setCaptchaToken(token);
+            }}
+          />
+
           <div className="flex flex-col sm:flex-row items-center justify-between">
             <button
               className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline transition-colors duration-200 w-full sm:w-auto mb-4 sm:mb-0"

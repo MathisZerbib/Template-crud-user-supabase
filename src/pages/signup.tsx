@@ -1,7 +1,8 @@
 import Link from "next/link";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/router";
 import AuthLayout from "../components/layout/AuthLayout";
+import { Turnstile } from "@marsidev/react-turnstile";
 
 function SignUp() {
   const router = useRouter();
@@ -12,7 +13,10 @@ function SignUp() {
   const [passError, setPassError] = useState(false);
   const [isEmailSent, setIsEmailSent] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
 
+  // Validate password match on change
   useEffect(() => {
     validatePassword(password, confirmPassword);
   }, [password, confirmPassword]);
@@ -21,21 +25,22 @@ function SignUp() {
     setPassError(pass !== confirmPass && confirmPass !== "");
   }
 
-  async function handleSubmit(e: { preventDefault: () => void }) {
+  // Function to handle form submission
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (passError || !name || !email || !password) {
+
+    if (passError || !name || !email || !password || !captchaToken) {
+      setError("Please ensure all fields are filled out correctly.");
       return; // Don't submit if there are errors or missing fields
     }
 
     setIsLoading(true);
+    setError(null); // Reset error state
 
-    let userData = {
-      name,
-      email,
-      password,
-    };
+    const userData = { name, email, password, captchaToken };
 
     try {
+      // Send user data to API
       const res = await fetch("/api/user/create", {
         method: "POST",
         body: JSON.stringify(userData),
@@ -44,11 +49,11 @@ function SignUp() {
         },
       });
 
-      if (res.ok) {
+      if (res.ok && res.status === 201) {
         const data = await res.json();
         console.log("Registration successful", data);
 
-        // Send a verification email via the API route
+        // Send a verification email via the API
         const emailRes = await fetch("/api/send-verification-email", {
           method: "POST",
           body: JSON.stringify({
@@ -63,16 +68,15 @@ function SignUp() {
         if (emailRes.ok) {
           setIsEmailSent(true);
         } else {
-          console.error("Failed to send verification email");
-          // Handle error (e.g., show error message)
+          setError("Failed to send verification email. Please try again.");
         }
       } else {
-        console.error("Registration failed");
-        // Handle failed registration (e.g., show error message)
+        const data = await res.json();
+        setError(data.message || "Registration failed. Please try again.");
       }
-    } catch (error) {
-      console.error("Error during registration:", error);
-      // Handle network errors
+    } catch (err) {
+      console.error("Error during registration:", err);
+      setError("An unexpected error occurred. Please try again.");
     } finally {
       setIsLoading(false);
     }
@@ -102,16 +106,17 @@ function SignUp() {
           onSubmit={handleSubmit}
           className="bg-white shadow-lg rounded-lg px-8 pt-6 pb-8 mb-4 w-full max-w-md"
         >
+          <h1 className="text-2xl font-bold mb-6 text-gray-700">Sign Up</h1>
+          {error && (
+            <p className="text-red-500 text-sm mb-4 text-center">{error}</p>
+          )}
+
           <div className="mb-4">
-            <label
-              className="block text-gray-700 text-sm font-bold mb-2"
-              htmlFor="name"
-            >
+            <label className="block text-gray-700 text-sm font-bold mb-2">
               Name
             </label>
             <input
               className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-              id="name"
               type="text"
               placeholder="Name"
               value={name}
@@ -121,15 +126,11 @@ function SignUp() {
           </div>
 
           <div className="mb-4">
-            <label
-              className="block text-gray-700 text-sm font-bold mb-2"
-              htmlFor="email"
-            >
+            <label className="block text-gray-700 text-sm font-bold mb-2">
               Email
             </label>
             <input
               className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-              id="email"
               type="email"
               placeholder="Email"
               value={email}
@@ -139,15 +140,11 @@ function SignUp() {
           </div>
 
           <div className="mb-4">
-            <label
-              className="block text-gray-700 text-sm font-bold mb-2"
-              htmlFor="password"
-            >
+            <label className="block text-gray-700 text-sm font-bold mb-2">
               Password
             </label>
             <input
               className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-              id="password"
               type="password"
               placeholder="***********"
               value={password}
@@ -157,15 +154,11 @@ function SignUp() {
           </div>
 
           <div className="mb-6">
-            <label
-              className="block text-gray-700 text-sm font-bold mb-2"
-              htmlFor="confirm-password"
-            >
+            <label className="block text-gray-700 text-sm font-bold mb-2">
               Confirm Password
             </label>
             <input
               className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 mb-3 leading-tight focus:outline-none focus:shadow-outline"
-              id="confirm-password"
               type="password"
               placeholder="***********"
               value={confirmPassword}
@@ -179,6 +172,13 @@ function SignUp() {
             )}
           </div>
 
+          {/* Turnstile Cloudlfare */}
+          <Turnstile
+            siteKey={process.env.NEXT_PUBLIC_HCAPTCHA_SITE_KEY!}
+            onSuccess={(token) => {
+              setCaptchaToken(token);
+            }}
+          />
           <div className="flex items-center justify-between flex-col sm:flex-row lg:flex-row">
             <button
               className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline transition-colors duration-200 my-2 w-full sm:w-auto"
