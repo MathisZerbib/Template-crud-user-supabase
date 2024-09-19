@@ -56,7 +56,7 @@ export default function VerifyEmail({ token, email }: VerifyEmailProps) {
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen py-2">
-      <h1 className="text-4xl font-bold mb-4">Email Verification</h1>
+      <h1 className="sm:text-4xl font-bold mb-4">Email Verification</h1>
       {verificationStatus === "verifying" && <p>Verifying your email...</p>}
       {verificationStatus === "success" && (
         <p className="text-green-600">

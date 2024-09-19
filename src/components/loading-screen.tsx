@@ -5,7 +5,9 @@ const LoadingScreen: React.FC = () => {
   return (
     <AuthLayout>
       <div className="fixed inset-0 z-50 flex items-center justify-center">
-        <div className="w-16 h-16 border-4 border-blue-500 border-solid rounded-full animate-spin border-t-transparent"></div>
+        <div className="w-16 h-16 border-4 border-blue-500 border-solid rounded-full animate-spin border-t-transparent">
+          <span className="sr-only">Loading...</span>
+        </div>
       </div>
     </AuthLayout>
   );

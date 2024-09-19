@@ -142,7 +142,7 @@ export default function Profile() {
             </button>
           </div>
         ) : (
-          <h1 className="relative z-10 text-4xl font-bold mb-4">
+          <h1 className="relative z-10 sm:text-4xl font-bold mb-4">
             {userInfo?.name}
             <button
               onClick={handleEditName}
@@ -177,7 +177,7 @@ export default function Profile() {
           href="/"
           className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
         >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
+          <h2 className={`mb-3 sm:text-2xl font-semibold`}>
             <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
               &lt;-
             </span>{" "}
