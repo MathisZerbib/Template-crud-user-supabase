@@ -1,9 +1,11 @@
 import { PrismaAdapter } from "@next-auth/prisma-adapter"
 import { PrismaClient } from "@prisma/client"
-export function CustomPrismaAdapter(prisma: PrismaClient) {
+import { Adapter, AdapterUser, VerificationToken } from "next-auth/adapters"
+
+export function CustomPrismaAdapter(prisma: PrismaClient): Adapter {
     return {
         ...PrismaAdapter(prisma),
-        createVerificationToken: async (data: { identifier: string; token: string; expires: Date }) => {
+        createVerificationToken: async (data: { identifier: string; token: string; expires: Date }): Promise<VerificationToken> => {
             console.log("Creating verification token for:", data.identifier);
             const verificationRequest = await prisma.verificationRequest.create({
                 data: {
@@ -12,11 +14,9 @@ export function CustomPrismaAdapter(prisma: PrismaClient) {
                     expires: data.expires,
                 },
             })
-            return {
-                ...verificationRequest
-            }
+            return verificationRequest
         },
-        useVerificationToken: async (params: { identifier: string; token: string }) => {
+        useVerificationToken: async (params: { identifier: string; token: string }): Promise<VerificationToken | null> => {
             console.log("Using verification token for:", params.identifier);
             const verificationRequest = await prisma.verificationRequest.findUnique({
                 where: {
@@ -32,19 +32,17 @@ export function CustomPrismaAdapter(prisma: PrismaClient) {
                         id: verificationRequest.id,
                     },
                 })
-                return {
-                    ...verificationRequest
-                }
+                return verificationRequest
             }
             return null
         },
-        getUserByEmail: async (email: string) => {
+        getUserByEmail: async (email: string): Promise<AdapterUser | null> => {
             console.log("Getting user by email:", email);
             const user = await prisma.user.findUnique({
                 where: { email },
             })
             console.log("User found:", user ? "Yes" : "No");
-            return user
+            return user as AdapterUser | null
         },
     }
 }
