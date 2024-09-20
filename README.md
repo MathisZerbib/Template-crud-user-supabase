@@ -9,6 +9,7 @@ This project demonstrates how to implement authentication in a Next.js applicati
 - Custom login page
 - Protected routes
 - User sessions
+- Google OAuth
 
 ## Prerequisites
 
@@ -47,6 +48,8 @@ SENDGRID_API_KEY="YOUR_SENDGRID_API_KEY"
 SENDGRID_FROM_EMAIL='YOUR_EMAIL'
 SENDGRID_FROM_NAME='YOUR NAME'
 SENDGRID_SMTP_SERVER='smtp://apikey:[YOUR-PASSWORD]@smtp.sendgrid.net:587'
+GOOGLE_CLIENT_ID='YOUR_GOOGLE_CLIENT_ID'
+GOOGLE_CLIENT_SECRET='YOUR_GOOGLE_CLIENT_SECRET'
 ``` 
 
 
