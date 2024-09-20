@@ -62,7 +62,7 @@ export default function Home() {
   }
 
   const handleSignOut = () => {
-    signOut({ callbackUrl: "/login" });
+    signOut({ callbackUrl: process.env.NEXT_PUBLIC_APP_URL + "/login" });
   };
 
   if (!session) {

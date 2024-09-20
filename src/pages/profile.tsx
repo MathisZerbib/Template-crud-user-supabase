@@ -177,9 +177,11 @@ export default function Profile() {
       </div>
 
       <div className="mb-32 grid text-center lg:mb-0 lg:grid-cols-4 lg:text-left">
-        <Link
-          href={process.env.NEXT_PUBLIC_APP_URL ?? "/"}
+        <button
           className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
+          onClick={() => {
+            window.location.href = "/";
+          }}
         >
           <h2 className={`mb-3 sm:text-2xl font-semibold`}>
             <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
@@ -190,7 +192,7 @@ export default function Profile() {
           <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
             Click here to go to Home.
           </p>
-        </Link>
+        </button>
       </div>
     </main>
   );
