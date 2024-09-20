@@ -56,6 +56,20 @@ export const authOptions: NextAuthOptions = {
 
 
                 if (user) {
+                    if (user.googleId && credentials.password) {
+                        // log user in with google
+                        const inputHash = SHA256(credentials
+                            .password).toString();
+                        if (user.password === inputHash) {
+                            console.log("Password match");
+                            return { id: user.id, email: user.email, name: user.name };
+                        }
+                        else {
+                            console.log("Password mismatch");
+                            return null;
+                        }
+
+                    }
                     if (user.googleId) {
                         console.log("User has a linked Google account");
                         return null; // Prevent login with credentials for Google-linked accounts
