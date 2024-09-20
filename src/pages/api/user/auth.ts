@@ -27,6 +27,7 @@ async function loginUserHandler(req: { body: { email: any; password: any; }; }, 
         email: true,
         password: true,
         image: true,
+        googleId: true,
       },
     });
     const hashedPassword = hashPassword(password);

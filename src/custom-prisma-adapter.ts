@@ -38,6 +38,10 @@ export function CustomPrismaAdapter(prisma: PrismaClient): Adapter {
         },
         getUserByEmail: async (email: string): Promise<AdapterUser | null> => {
             console.log("Getting user by email:", email);
+            if (!email) {
+                console.log("No email provided");
+                return null
+            }
             const user = await prisma.user.findUnique({
                 where: { email },
             })

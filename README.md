@@ -70,19 +70,22 @@ datasource db {
 }
 
 model Account {
-    id                 String    @id @default(cuid())
-    userId             String
-    providerType       String
-    providerId         String
-    providerAccountId  String
-    refreshToken       String?
-    accessToken        String?
-    accessTokenExpires DateTime?
-    createdAt          DateTime  @default(now())
-    updatedAt          DateTime  @updatedAt
-    user               User      @relation(fields: [userId], references: [id])
+    id                String  @id @default(cuid())
+    userId            String
+    type              String
+    provider          String
+    providerAccountId String
+    refresh_token     String? @db.Text
+    access_token      String? @db.Text
+    expires_at        Int?
+    token_type        String?
+    scope             String?
+    id_token          String? @db.Text
+    session_state     String?
 
-    @@unique([providerId, providerAccountId])
+    user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+    @@unique([provider, providerAccountId])
 }
 
 model Session {
@@ -108,8 +111,9 @@ model User {
     accounts          Account[]
     sessions          Session[]
     resetToken        String?
-    verificationToken String?
     resetTokenExpiry  DateTime?
+    verificationToken String?
+    googleId          String?   @unique
 }
 
 model VerificationRequest {

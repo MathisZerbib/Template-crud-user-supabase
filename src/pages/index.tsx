@@ -72,7 +72,11 @@ export default function Home() {
       >
         <h1 className="text-2xl font-bold mb-4">Access Denied</h1>
         <p>You need to be signed in to view this page.</p>
-        <Link href="/login" className="mt-4 text-blue-500 hover:underline">
+        <br />
+        <Link
+          href="/login"
+          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
+        >
           Sign In
         </Link>
       </main>

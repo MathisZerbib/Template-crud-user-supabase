@@ -7,9 +7,28 @@ import { JWT } from "next-auth/jwt";
 import { NextApiRequest, NextApiResponse } from "next";
 import { CustomPrismaAdapter } from "../../../custom-prisma-adapter";
 import { SHA256 } from 'crypto-js';
+import GoogleProvider from "next-auth/providers/google";
 
 export const authOptions: NextAuthOptions = {
     providers: [
+        GoogleProvider({
+            clientId: process.env.GOOGLE_CLIENT_ID ?? "",
+            clientSecret: process.env.GOOGLE_CLIENT_SECRET ?? "",
+            allowDangerousEmailAccountLinking: true,
+            profile(profile) {
+                return {
+                    id: profile.sub,
+                    name: profile.name,
+                    email: profile.email,
+                    image: profile.picture,
+                    googleId: profile.sub,
+                }
+            },
+        }),
+
+        /// Prop googleid in user 
+        // if register normal == google id null 
+        // else and already registered set google id
         CredentialsProvider({
             id: "credentials",
             name: "Credentials",
@@ -31,12 +50,17 @@ export const authOptions: NextAuthOptions = {
                         name: true,
                         password: true,
                         emailVerified: true,
+                        googleId: true,
                     },
                 });
 
-                console.log("User found:", user ? "Yes" : "No");
 
                 if (user) {
+                    if (user.googleId) {
+                        console.log("User has a linked Google account");
+                        return null; // Prevent login with credentials for Google-linked accounts
+                    }
+
                     if (credentials.password) {
                         // Normal login with password
                         const inputHash = SHA256(credentials.password).toString();
@@ -87,7 +111,7 @@ export const authOptions: NextAuthOptions = {
     pages: {
         signIn: "/login",
         signOut: "/login",
-        error: "/login",
+        error: '/auth/error',
         verifyRequest: '/verify-email',
     },
 
@@ -112,17 +136,62 @@ export const authOptions: NextAuthOptions = {
 
         async signIn({ user, account, profile, email, credentials }) {
             console.log("Sign-in attempt:", { user, account, email, credentials });
+
+            if (account?.provider === "google") {
+                const existingUser = await prisma.user.findUnique({
+                    where: { email: user.email as string },
+                    select: { id: true, emailVerified: true, googleId: true }
+                });
+
+                if (existingUser) {
+                    if (existingUser.emailVerified && !existingUser.googleId) {
+                        // User exists, email is verified, and Google account is not linked yet
+                        await prisma.user.update({
+                            where: { id: existingUser.id },
+                            data: { googleId: user.id },
+                        });
+                        console.log("Linked Google account to existing user");
+                        return true;
+                    } else if (existingUser.googleId) {
+                        // Google account already linked, allow sign in
+                        console.log("Google account already linked, allowing sign in");
+                        return true;
+                    } else {
+                        // User exists but email is not verified, don't link account
+                        console.log("User exists but email is not verified, not linking account");
+                        return false;
+                    }
+                } else {
+                    // User doesn't exist, create new account
+                    await prisma.user.create({
+                        data: {
+                            name: user.name,
+                            email: user.email,
+                            googleId: user.id,
+                            emailVerified: new Date(), // Google accounts are considered verified
+                        },
+                    });
+                    console.log("Created new user with Google account");
+                    return true;
+                }
+            }
+
             if (email?.verificationRequest) {
                 console.log("Verification request, allowing sign-in");
                 return true;
             }
+
+            // For non-Google sign-ins, check if email is verified
             const dbUser = await prisma.user.findUnique({
                 where: { email: user.email as string },
                 select: { emailVerified: true },
             });
             console.log("DB User email verified:", dbUser?.emailVerified);
+
             return !!dbUser?.emailVerified;
         },
+
+
         async redirect({ url, baseUrl }) {
             if (url.startsWith(baseUrl)) return url
             // Allows relative callback URLs
@@ -134,3 +203,4 @@ export const authOptions: NextAuthOptions = {
 
 const authHandler = (req: NextApiRequest, res: NextApiResponse) => NextAuth(req, res, authOptions);
 export default authHandler;
+

@@ -70,7 +70,7 @@ async function createUserHandler(req: NextApiRequest, res: NextApiResponse) {
   } catch (e) {
     // Handle unique constraint violation (P2002)
     if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === "P2002") {
-      return res.status(400).json({ message: "Email already exists" });
+      return res.status(400).json({ message: "Failed to register user" });
     }
 
     // Handle other Prisma errors

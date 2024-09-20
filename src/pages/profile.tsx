@@ -107,7 +107,11 @@ export default function Profile() {
       >
         <h1 className="text-2xl font-bold mb-4">Access Denied</h1>
         <p>You need to be signed in to view this page.</p>
-        <Link href="/login" className="mt-4 text-blue-500 hover:underline">
+        <br />
+        <Link
+          href="/login"
+          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
+        >
           Sign In
         </Link>
       </main>
@@ -131,7 +135,7 @@ export default function Profile() {
               type="text"
               value={newName}
               onChange={(e) => setNewName(e.target.value)}
-              className="px-2 py-1 border rounded"
+              className="px-2 py-1 border rounded text-gray-800"
             />
             <button
               onClick={handleSaveName}
@@ -174,7 +178,7 @@ export default function Profile() {
 
       <div className="mb-32 grid text-center lg:mb-0 lg:grid-cols-4 lg:text-left">
         <Link
-          href="/"
+          href={process.env.NEXT_PUBLIC_APP_URL ?? "/"}
           className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
         >
           <h2 className={`mb-3 sm:text-2xl font-semibold`}>
